@@ -1,0 +1,7 @@
+[package]
+name = "mi_own_mess"
+version = "0.1.0"
+authors = ["Keenan Lidral-Porter <keenan@surfair.com>"]
+
+[dependencies]
+mio = "0.3.0"
