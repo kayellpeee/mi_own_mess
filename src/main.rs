@@ -8,7 +8,7 @@ fn main() {
     const SERVER: Token = Token(0);
     const CLIENT: Token = Token(1);
 
-    let address: mio::IpAddr = "127.0.0.1:13555".parse().unwrap();
+    let address: std::net::SocketAddr = "127.0.0.1:13265".parse().unwrap();
 
     println!("here is address {:?}", address);
 
