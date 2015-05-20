@@ -28,6 +28,7 @@ pub fn init() -> Result<(), SetLoggerError> {
 }
 
 fn main() {
+    init();
 
     const SERVER: Token = Token(0);
     const CLIENT: Token = Token(1);
@@ -57,5 +58,6 @@ fn main() {
             }
         }
     }
+    info!("Here lies your sock {:?}", sock);
     event_loop.run(&mut MyHandler(server)).unwrap();
 }
