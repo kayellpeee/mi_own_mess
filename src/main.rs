@@ -28,24 +28,34 @@ pub fn init() -> Result<(), SetLoggerError> {
 }
 
 fn main() {
-    init();
+    let initialized = init();
+    if initialized.is_err() {
+        panic!("Logger not initialized");
+    }
 
     const SERVER: Token = Token(0);
     const CLIENT: Token = Token(1);
 
     let address: std::net::SocketAddr = "127.0.0.1:13265".parse().unwrap();
     let server = TcpListener::bind(&address).unwrap();
+
     let mut event_loop = EventLoop::new().unwrap();
     event_loop.register(&server, SERVER).unwrap();
+    info!("Registered server - {:?}", server);
+
     let sock = TcpStream::connect(&address).unwrap();
     event_loop.register(&sock, CLIENT).unwrap();
+    info!("Registered client - {:?}", sock);
+    let sender = event_loop.channel();
+    info!("Created new channel - {:?}", sender);
+
     struct MyHandler(TcpListener);
     impl Handler for MyHandler {
         type Timeout = ();
-        type Message = ();
+        type Message = i32;
 
         fn readable(&mut self, event_loop: &mut EventLoop<MyHandler>,
-                    token: Token, _:ReadHint) {
+                    token: Token, _: ReadHint) {
             match token {
                 SERVER => {
                     let MyHandler(ref mut server) = *self;
@@ -57,7 +67,13 @@ fn main() {
                 _ => panic!("unexpected token bro"),
             }
         }
+
+        fn notify(&mut self, event_loop: &mut EventLoop<MyHandler>, msg: i32) {
+            info!("Recieved message - {:?}", msg);
+            event_loop.shutdown();
+        }
     }
-    info!("Here lies your sock {:?}", sock);
+    let response = sender.send(132);
+    info!("Sent message - {:?}", response);
     event_loop.run(&mut MyHandler(server)).unwrap();
 }
