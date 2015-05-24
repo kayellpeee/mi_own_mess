@@ -1,9 +1,14 @@
 extern crate mio;
 #[macro_use]
 extern crate log;
+extern crate KLPhash;
 
 use mio::*;
 use log::{LogRecord, LogLevel, LogMetadata, SetLoggerError, LogLevelFilter};
+use KLPhash::hash_one;
+use KLPhash::hash_two;
+use KLPhash::hash_three;
+use std::marker::PhantomData;
 
 struct SimpleLogger;
 
@@ -37,17 +42,20 @@ fn main() {
     let sender = event_loop.channel();
     info!("Created new channel - {:?}", sender);
 
-    struct MyHandler;
-    impl Handler for MyHandler {
+    struct MyHandler<'a>;
+    impl<'a> Handler for MyHandler<'a> {
         type Timeout = ();
-        type Message = i32;
+        type Message = PhantomData<&'a str>;
 
-        fn notify(&mut self, event_loop: &mut EventLoop<MyHandler>, msg: i32) {
+        fn notify(&mut self, event_loop: &mut EventLoop<MyHandler>, msg: &str) {
             info!("Recieved message - {:?}", msg);
             event_loop.shutdown();
         }
     }
-    let response = sender.send(132);
-    info!("Sent message - {:?}", response);
+
+    let mut response = sender.send("whaddup");
+    info!("Sent 1 message - {:?}", response);
+    response = sender.send("test");
+    info!("Sent another message - {:?}", response);
     event_loop.run(&mut MyHandler).unwrap();
 }

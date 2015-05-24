@@ -6,3 +6,4 @@ authors = ["Keenan Lidral-Porter <keenan@surfair.com>"]
 [dependencies]
 mio = "0.3.0"
 log = "0.3.1"
+KLPhash = "0.1.3"
