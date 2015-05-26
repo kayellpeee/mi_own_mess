@@ -8,7 +8,6 @@ use log::{LogRecord, LogLevel, LogMetadata, SetLoggerError, LogLevelFilter};
 use KLPhash::hash_one;
 use KLPhash::hash_two;
 use KLPhash::hash_three;
-use std::marker::PhantomData;
 
 struct SimpleLogger;
 
@@ -42,20 +41,25 @@ fn main() {
     let sender = event_loop.channel();
     info!("Created new channel - {:?}", sender);
 
-    struct MyHandler<'a>;
-    impl<'a> Handler for MyHandler<'a> {
+    struct MyHandler;
+    impl Handler for MyHandler {
         type Timeout = ();
-        type Message = PhantomData<&'a str>;
+        type Message = &'static str;
 
         fn notify(&mut self, event_loop: &mut EventLoop<MyHandler>, msg: &str) {
             info!("Recieved message - {:?}", msg);
+            info!("Hashed message - {}", hash_one(msg, 100));
+            info!("Hashed message - {}", hash_two(msg, 100));
+            info!("Hashed message - {}", hash_three(msg, 100));
             event_loop.shutdown();
         }
     }
 
-    let mut response = sender.send("whaddup");
-    info!("Sent 1 message - {:?}", response);
-    response = sender.send("test");
-    info!("Sent another message - {:?}", response);
+    let response = sender.send("test");
+    if response.is_err() {
+        debug!("Send errored! {:?}", response);
+    } else {
+        info!("Sent 1 message - {:?}", response);
+    }
     event_loop.run(&mut MyHandler).unwrap();
 }
